@@ -1,0 +1,242 @@
+/* ==========================================================================
+   ULTRON 2 — MONOCHROME DESIGN SYSTEM & 3D HARDWARE ACCELERATED STYLES
+   ========================================================================== */
+
+:root {
+  --bg-pitch: #000000;
+  --bg-obsidian: #0A0A0A;
+  --bg-charcoal: #121212;
+  --border-slate: #262626;
+  --text-white: #FFFFFF;
+  --text-slate: #A1A1AA;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-pitch);
+  color: var(--text-white);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* Force Hidden Elements to Never Intercept Touches */
+.hidden, [hidden] {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* Enable text inputs and buttons on touch screens */
+input, textarea, select, button {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  pointer-events: auto !important;
+}
+
+/* Custom Minimalist Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--bg-pitch);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-slate);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #404040;
+}
+
+/* 3D Message Bubble Transitions */
+.message-bubble-in {
+  animation: message3DEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes message3DEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97) perspective(600px) rotateX(-8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) perspective(600px) rotateX(0deg);
+  }
+}
+
+/* 3D Card Flip Workspace for Inline Message Editing */
+.flip-card-container {
+  perspective: 1000px;
+}
+
+.flipped-workspace {
+  transform: rotateX(360deg);
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Markdown Rendering Engine Typography */
+.prose-invert {
+  color: #ECECEC;
+  line-height: 1.65;
+  font-size: 0.925rem;
+}
+
+.prose-invert p {
+  margin-bottom: 0.85rem;
+}
+
+.prose-invert h1,
+.prose-invert h2,
+.prose-invert h3,
+.prose-invert h4 {
+  color: var(--text-white);
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.015em;
+}
+
+.prose-invert h1 { font-size: 1.35rem; }
+.prose-invert h2 { font-size: 1.15rem; }
+.prose-invert h3 { font-size: 1.05rem; }
+
+.prose-invert ul, 
+.prose-invert ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.prose-invert li {
+  margin-bottom: 0.25rem;
+}
+
+.prose-invert code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: #1a1a1a;
+  border: 1px solid var(--border-slate);
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.825rem;
+  color: #f1f1f1;
+}
+
+.prose-invert pre {
+  background-color: #0b0b0b;
+  border: 1px solid var(--border-slate);
+  border-radius: 0.6rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-top: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.prose-invert pre code {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.825rem;
+  color: #ECECEC;
+}
+
+.prose-invert blockquote {
+  border-left: 3px solid #525252;
+  padding-left: 1rem;
+  color: var(--text-slate);
+  margin-bottom: 0.85rem;
+  font-style: italic;
+}
+
+.prose-invert table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.prose-invert th, 
+.prose-invert td {
+  border: 1px solid var(--border-slate);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.825rem;
+}
+
+.prose-invert th {
+  background-color: var(--bg-charcoal);
+  color: var(--text-white);
+}
+
+/* KaTeX Formula Overrides */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+  margin: 0.5rem 0;
+}
+
+/* Creator Branding Override Style */
+.creator-override-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 70%);
+  border: 1px solid var(--border-slate);
+  border-radius: 1rem;
+}
+
+.creator-override-text {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+}
+
+/* Glassmorphism Popup Map Leaflet Dark Theme Overrides */
+.leaflet-container {
+  background: #000 !important;
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(10, 10, 10, 0.95) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--border-slate);
+  backdrop-filter: blur(8px);
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(10, 10, 10, 0.95) !important;
+  border: 1px solid var(--border-slate);
+}
+
+/* Modal In Animation */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-in {
+  animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Audio Waveform Canvas Animation */
+#waveform-canvas {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.25));
+  }
