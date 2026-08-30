@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ultron 2 — Autonomous AI Studio</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pitch: '#000000',
+            obsidian: '#0A0A0A',
+            charcoal: '#121212',
+            slateborder: '#262626',
+            mutedsurface: '#1E1E1E',
+            textmuted: '#A1A1AA'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- KaTeX CSS & JS for Mathematical Typography -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Marked.js Markdown Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Leaflet CSS & JS for Geospatial Engine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-pitch text-white antialiased h-screen overflow-hidden flex font-sans">
+
+  <!-- Mobile Overlay Backdrop -->
+  <div id="sidebar-backdrop" style="display: none;" class="fixed inset-0 bg-black/80 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside id="app-sidebar" class="fixed md:static top-0 bottom-0 left-0 w-80 bg-obsidian border-r border-slateborder flex flex-col z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+    
+    <!-- Sidebar Header -->
+    <div class="p-4 border-b border-slateborder flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" id="sidebar-logo-container">
+        <div id="app-header-logo-icon" class="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-black tracking-tighter text-sm overflow-hidden">
+          U2
+        </div>
+        <div>
+          <h1 class="text-sm font-bold tracking-widest uppercase text-white">Ultron 2</h1>
+          <span class="text-[10px] text-textmuted font-mono block leading-none">CORE v3.6-PRO</span>
+        </div>
+      </div>
+      <button id="close-sidebar-btn" type="button" class="md:hidden text-textmuted hover:text-white p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- New Chat Trigger -->
+    <div class="p-3">
+      <button id="btn-new-chat" type="button" class="w-full flex items-center justify-center space-x-2 bg-white text-black font-semibold py-2.5 px-4 rounded-lg hover:bg-neutral-200 transition duration-150 active:scale-[0.98] shadow-sm">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        <span class="text-xs uppercase tracking-wider">New Session</span>
+      </button>
+    </div>
+
+    <!-- Search Chat History -->
+    <div class="px-3 pb-2">
+      <div class="relative">
+        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 text-textmuted"></i>
+        <input id="chat-search-input" type="text" placeholder="Search sessions..." class="w-full bg-charcoal border border-slateborder rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-textmuted focus:outline-none focus:border-white transition" />
+      </div>
+    </div>
+
+    <!-- Sessions List -->
+    <div class="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar" id="chat-history-list">
+      <!-- Session cards dynamically populated by app-engine.js -->
+    </div>
+
+    <!-- Sidebar Bottom Controls -->
+    <div class="p-3 border-t border-slateborder space-y-1">
+      <button id="btn-open-map-toggle" type="button" class="w-full flex items-center space-x-2.5 px-3 py-2 text-xs rounded-lg text-textmuted hover:text-white hover:bg-charcoal transition">
+        <i data-lucide="globe" class="w-4 h-4"></i>
+        <span>Geospatial Radar</span>
+      </button>
+
+      <button id="btn-export-history" type="button" class="w-full flex items-center space-x-2.5 px-3 py-2 text-xs rounded-lg text-textmuted hover:text-white hover:bg-charcoal transition">
+        <i data-lucide="download" class="w-4 h-4"></i>
+        <span>Export Chat Logs (.md)</span>
+      </button>
+
+      <button id="btn-open-admin" type="button" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-textmuted hover:text-white hover:bg-charcoal transition">
+        <div class="flex items-center space-x-2.5">
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          <span>Admin & Settings</span>
+        </div>
+        <span id="active-model-badge" class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slateborder text-white">3.6-FLASH</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN STUDIO AREA -->
+  <main class="flex-1 flex flex-col h-screen overflow-hidden bg-pitch relative">
+    
+    <!-- Top Navigation Header -->
+    <header class="h-14 border-b border-slateborder flex items-center justify-between px-4 z-30 bg-pitch/80 backdrop-blur-md">
+      <div class="flex items-center space-x-3">
+        <button id="mobile-menu-btn" type="button" class="md:hidden text-textmuted hover:text-white p-1">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <span id="active-session-title" class="text-xs font-semibold uppercase tracking-wider text-white truncate max-w-[200px] md:max-w-md">
+          Autonomous Console
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-charcoal rounded-full border border-slateborder text-[11px] text-textmuted">
+          <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+          <span class="font-mono" id="system-status-indicator">SYSTEM READY</span>
+        </div>
+        <button id="btn-clear-chat" type="button" title="Clear Current Stream" class="p-2 text-textmuted hover:text-white hover:bg-charcoal rounded-lg transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Interactive 3D Solar Canvas Hero Area -->
+    <div id="hero-cosmos-container" class="relative w-full h-48 border-b border-slateborder bg-pitch overflow-hidden shrink-0 transition-all duration-300">
+      <div id="three-canvas-wrapper" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></div>
+      
+      <div class="absolute top-3 left-4 pointer-events-none z-10">
+        <h2 class="text-base font-black tracking-widest text-white uppercase drop-shadow">Ultron 2 Cosmos</h2>
+        <p class="text-[10px] text-textmuted font-mono">Real-Time Interactive Orbital Mechanics Engine</p>
+      </div>
+
+      <div class="absolute bottom-2 right-4 flex items-center space-x-2 z-10">
+        <button id="btn-toggle-hero" type="button" class="px-2 py-1 text-[10px] bg-charcoal/80 backdrop-blur border border-slateborder text-textmuted hover:text-white rounded transition">
+          Minimize 3D Orbit
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Geospatial World Map Radar -->
+    <div id="geospatial-panel" style="display: none;" class="hidden border-b border-slateborder bg-obsidian transition-all duration-300 relative">
+      <div class="p-2 border-b border-slateborder flex items-center justify-between px-4">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="map-pin" class="w-4 h-4 text-white"></i>
+          <span class="text-xs font-semibold tracking-wider uppercase">Live Satellite & Meteorological Telemetry</span>
+        </div>
+        <button id="btn-close-map" type="button" class="text-textmuted hover:text-white p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-4 h-64">
+        <div id="leaflet-map" class="lg:col-span-3 h-full w-full z-10"></div>
+        <div class="p-3 bg-charcoal flex flex-col justify-between overflow-y-auto text-xs space-y-2 border-t lg:border-t-0 lg:border-l border-slateborder">
+          <div>
+            <div class="text-[10px] font-mono uppercase text-textmuted">Target Coordinates</div>
+            <div id="map-target-coords" class="font-mono text-white text-xs mt-0.5">Click any location on map</div>
+          </div>
+          <div>
+            <div class="text-[10px] font-mono uppercase text-textmuted">Administrative Region</div>
+            <div id="map-target-name" class="font-medium text-white text-xs mt-0.5">—</div>
+          </div>
+          <div id="map-weather-telemetry" style="display: none;" class="border-t border-slateborder pt-2 space-y-1 hidden">
+            <div class="text-[10px] font-mono uppercase text-textmuted">Atmospheric Telemetry</div>
+            <div class="flex justify-between text-xs"><span>Temperature:</span><span id="wt-temp" class="font-mono text-white">—</span></div>
+            <div class="flex justify-between text-xs"><span>Condition:</span><span id="wt-condition" class="font-mono text-white">—</span></div>
+            <div class="flex justify-between text-xs"><span>Wind Velocity:</span><span id="wt-wind" class="font-mono text-white">—</span></div>
+            <div class="flex justify-between text-xs"><span>Humidity:</span><span id="wt-humidity" class="font-mono text-white">—</span></div>
+          </div>
+          <button id="btn-insert-coords-prompt" type="button" class="w-full bg-white text-black text-xs font-semibold py-1.5 rounded hover:bg-neutral-200 transition">
+            Inject Location to Prompt
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Chat Streaming Viewport -->
+    <div id="chat-stream-viewport" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
+      <!-- Bubbles populated dynamically via app-engine.js -->
+    </div>
+
+    <!-- Active Audio Waveform Bar Visualizer (Voice Command) -->
+    <div id="voice-waveform-container" style="display: none;" class="hidden px-6 py-2 bg-charcoal/90 border-t border-slateborder flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+        <span class="text-xs font-mono text-white uppercase tracking-wider">Ultron Speech Recognition Active</span>
+      </div>
+      <canvas id="waveform-canvas" width="220" height="24" class="rounded bg-black/40"></canvas>
+      <button id="btn-stop-voice" type="button" class="text-xs text-red-400 hover:text-red-300 font-mono underline">
+        Stop Listening
+      </button>
+    </div>
+
+    <!-- Attachment Thumbnail Preview Tray -->
+    <div id="attachment-preview-tray" style="display: none;" class="hidden px-6 pt-2 pb-1 bg-pitch border-t border-slateborder flex flex-wrap gap-2 items-center">
+      <!-- Media badges -->
+    </div>
+
+    <!-- FLOATING DOCKED PROMPT INPUT DECK -->
+    <div class="p-3 md:p-4 bg-pitch/90 backdrop-blur-lg border-t border-slateborder relative z-20">
+      <div class="max-w-4xl mx-auto">
+        <form id="chat-input-form" class="bg-charcoal border border-slateborder focus-within:border-white rounded-2xl transition duration-200 shadow-2xl overflow-hidden">
+          
+          <textarea
+            id="prompt-textarea"
+            rows="1"
+            placeholder="Type your objective, prompt with code, ask math, or drop attachments..."
+            class="w-full bg-transparent px-4 pt-3 pb-2 text-sm text-white placeholder-textmuted focus:outline-none resize-none max-h-48 custom-scrollbar leading-relaxed"
+          ></textarea>
+
+          <!-- Action Control Bar -->
+          <div class="px-3 pb-2.5 flex items-center justify-between">
+            <div class="flex items-center space-x-1">
+              
+              <!-- Native Attachment Trigger -->
+              <input type="file" id="file-input-element" multiple accept="image/*,.pdf,.txt,.csv,.json,.js,.py,.html" class="hidden" />
+              <button type="button" id="btn-trigger-upload" title="Attach image or document" class="p-2 text-textmuted hover:text-white rounded-lg hover:bg-mutedsurface transition">
+                <i data-lucide="paperclip" class="w-4 h-4"></i>
+              </button>
+
+              <!-- Voice Dictation Input -->
+              <button type="button" id="btn-trigger-voice" title="Dictate with voice" class="p-2 text-textmuted hover:text-white rounded-lg hover:bg-mutedsurface transition">
+                <i data-lucide="mic" class="w-4 h-4"></i>
+              </button>
+
+              <!-- Web Search Grounding Tool Toggle -->
+              <button type="button" id="btn-toggle-grounding" title="Enable Google Search Grounding" class="px-2.5 py-1 text-[11px] font-mono flex items-center space-x-1.5 rounded-lg border border-slateborder text-textmuted hover:text-white hover:bg-mutedsurface transition">
+                <i data-lucide="globe-2" class="w-3.5 h-3.5"></i>
+                <span id="grounding-status-label">Search: OFF</span>
+              </button>
+
+              <!-- Model Selector Dropdown Button (Configured to Gemini 3.6 Flash Series) -->
+              <div class="relative inline-block text-left">
+                <select id="quick-model-select" class="bg-mutedsurface text-textmuted hover:text-white text-[11px] font-mono border border-slateborder rounded-lg px-2 py-1 focus:outline-none appearance-none pr-6 cursor-pointer">
+                  <option value="gemini-3.6-flash" selected>Gemini 3.6 Flash</option>
+                  <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option>
+                  <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-textmuted">
+                  <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Prompt Button -->
+            <button type="submit" id="btn-submit-prompt" class="bg-white text-black p-2 rounded-xl font-bold hover:bg-neutral-200 transition active:scale-95 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed">
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </form>
+        <div class="flex items-center justify-between px-2 pt-1.5 text-[10px] text-textmuted font-mono">
+          <span>Ultron 2 AI Architecture • End-to-End Multimodal Intelligence</span>
+          <span>ENTER to send • SHIFT+ENTER for newline</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FIRST RUN / SETTINGS MODAL DIALOG -->
+  <div id="settings-modal" style="display: none;" class="fixed inset-0 bg-black/85 z-50 hidden backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-obsidian border border-slateborder rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-modal-in">
+      
+      <div class="flex items-center justify-between border-b border-slateborder pb-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-6 h-6 bg-white text-black rounded font-black flex items-center justify-center text-xs">U2</div>
+          <h3 class="text-sm font-bold tracking-wider uppercase text-white">Ultron 2 Settings & Admin</h3>
+        </div>
+        <button id="btn-close-settings" type="button" class="text-textmuted hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Gemini API Key Section -->
+      <div class="space-y-2">
+        <label class="text-xs font-mono uppercase text-white flex justify-between">
+          <span>Google Gemini API Key</span>
+          <span class="text-textmuted">Stored 100% locally</span>
+        </label>
+        <div class="relative">
+          <input id="input-api-key" type="password" placeholder="Paste your AI Studio Key (AIzaSy...)" class="w-full bg-charcoal border border-slateborder rounded-lg px-3 py-2 text-xs text-white font-mono placeholder-textmuted focus:outline-none focus:border-white transition" />
+          <button id="btn-toggle-key-visibility" type="button" class="absolute right-3 top-2.5 text-textmuted hover:text-white">
+            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <p class="text-[10px] text-textmuted leading-relaxed">
+          No key hardcoded. Ultron 2 requires an API Key from Google AI Studio. Get one free at <a href="https://aistudio.google.com/" target="_blank" class="text-white underline">aistudio.google.com</a>.
+        </p>
+      </div>
+
+      <!-- Custom App Logo Selector -->
+      <div class="space-y-2 border-t border-slateborder pt-4">
+        <label class="text-xs font-mono uppercase text-white block">Custom Header Brand Logo</label>
+        <div class="flex items-center space-x-3">
+          <div id="preview-admin-logo" class="w-10 h-10 rounded-lg bg-charcoal border border-slateborder flex items-center justify-center overflow-hidden font-bold text-xs">
+            U2
+          </div>
+          <input type="file" id="input-custom-logo" accept="image/*" class="hidden" />
+          <button type="button" id="btn-upload-custom-logo" class="bg-mutedsurface text-white border border-slateborder px-3 py-1.5 rounded-lg text-xs hover:bg-slateborder transition">
+            Choose Image File
+          </button>
+          <button type="button" id="btn-reset-logo" class="text-xs text-textmuted hover:text-white underline">
+            Reset Default
+          </button>
+        </div>
+      </div>
+
+      <!-- Default Model Matrix Selection -->
+      <div class="space-y-2 border-t border-slateborder pt-4">
+        <label class="text-xs font-mono uppercase text-white block">Default Model Matrix</label>
+        <select id="modal-model-select" class="w-full bg-charcoal border border-slateborder text-white text-xs rounded-lg px-3 py-2 focus:outline-none">
+          <option value="gemini-3.6-flash" selected>Gemini 3.6 Flash (Latest Workhorse Multimodal Engine)</option>
+          <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Superfast Low-Latency)</option>
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash (General Intelligence Agent)</option>
+        </select>
+      </div>
+
+      <!-- TTS Voice Output Toggle -->
+      <div class="flex items-center justify-between border-t border-slateborder pt-4">
+        <div>
+          <div class="text-xs font-medium text-white">Text-to-Speech Voice Readout</div>
+          <div class="text-[10px] text-textmuted font-mono">Speak response answers automatically</div>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="toggle-tts-speech" class="sr-only peer">
+          <div class="w-9 h-5 bg-charcoal peer-focus:outline-none border border-slateborder rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-neutral-100 peer-checked:after:bg-black"></div>
+        </label>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="border-t border-slateborder pt-4 flex justify-end space-x-2">
+        <button id="btn-save-settings" type="button" class="bg-white text-black font-semibold text-xs px-5 py-2 rounded-lg hover:bg-neutral-200 transition">
+          Save Configuration
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD APPLICATION CORE SCRIPTS -->
+  <script src="solar-system.js"></script>
+  <script src="world-map.js"></script>
+  <script src="app-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
